@@ -14,11 +14,11 @@ import java.util.Objects;
 public class Ingredient {
     private int id;
     private String name;
-    private double price;
+    private Double price;
     private CategoryEnum category;
     private List<StockMovement> stockMovementList;
 
-    public Ingredient(int id, String name, double price, CategoryEnum category) {
+    public Ingredient(int id, String name, Double price, CategoryEnum category) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -42,11 +42,11 @@ public class Ingredient {
         this.name = name;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
@@ -93,7 +93,7 @@ public class Ingredient {
             return new StockValue(0D, UnitTypeEnum.KG);
         }
         this.getStockMovementList().forEach(stockMovement -> {
-            UnitConversion.convertToKG(stockMovement.getValue(), this.getName());
+            new UnitConversion().convertToKG(stockMovement.getValue(), this.getName());
         });
         double quantity = this.getStockMovementList().stream()
                 .filter(stock -> stock.getCreationDateTime().isBefore(t))

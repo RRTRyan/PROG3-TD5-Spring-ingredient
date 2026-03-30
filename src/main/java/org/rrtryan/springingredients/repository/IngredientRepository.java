@@ -22,15 +22,18 @@ public class IngredientRepository extends GenericRepository {
     public List<Ingredient> findIngredients(int page, int size) {
         Connection connection = getConnection();
         try {
+            boolean getAllIngredients = (size == Integer.MAX_VALUE && page == 0);
             PreparedStatement preparedStatement = connection.prepareStatement(
                     """
                             SELECT i.id AS ingId, i.name AS ingName, i.price, i.category
                             FROM ingredient AS i
-                            OFFSET ? LIMIT ?
-                            """
+                            %s
+                            """.formatted(getAllIngredients ? "" : "LIMIT ? OFFSET ?")
             );
-            preparedStatement.setInt(1, (page - 1) * size);
-            preparedStatement.setInt(2, size);
+            if (!getAllIngredients) {
+                preparedStatement.setInt(1, (page - 1) * size);
+                preparedStatement.setInt(2, size);
+            }
             ResultSet resultSet = preparedStatement.executeQuery();
             List<Ingredient> ingredients = new ArrayList<>();
             ingredientRepositoryUtils.createIngredientList(connection, resultSet, ingredients);

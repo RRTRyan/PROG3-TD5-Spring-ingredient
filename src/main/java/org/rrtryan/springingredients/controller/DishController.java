@@ -1,12 +1,13 @@
 package org.rrtryan.springingredients.controller;
 
-import org.rrtryan.springingredients.dto.IngredientDTO;
+import org.rrtryan.springingredients.entity.Ingredient;
 import org.rrtryan.springingredients.exception.BadRequestException;
 import org.rrtryan.springingredients.exception.NotFoundException;
 import org.rrtryan.springingredients.service.DishService;
 import org.rrtryan.springingredients.validator.IngredientValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,13 +31,15 @@ public class DishController {
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
+        } catch (HttpMessageNotWritableException e) {
+            throw new RuntimeException(e);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PutMapping("/{id}/ingredients")
-    public ResponseEntity<?> updateDishIngredients(@PathVariable(required = false) Integer id, @RequestBody(required = false) List<IngredientDTO> ingredients) {
+    public ResponseEntity<?> updateDishIngredients(@PathVariable(required = false) Integer id, @RequestBody(required = false) List<Ingredient> ingredients) {
         try {
             if (id == null) {
                 throw new BadRequestException("Missing id");
@@ -44,7 +47,7 @@ public class DishController {
             if (ingredients == null) {
                 throw new BadRequestException("Missing ingredients");
             }
-            for (IngredientDTO ingredient : ingredients) {
+            for (Ingredient ingredient : ingredients) {
                 ingredientValidator.validate(ingredient);
             }
             return ResponseEntity.status(HttpStatus.OK)

@@ -4,7 +4,8 @@ import org.rrtryan.springingredients.entity.StockValue;
 import org.rrtryan.springingredients.entity.enums.UnitTypeEnum;
 
 public class UnitConversion {
-    public static StockValue convertToKG(StockValue stockValue, String ingredientName) {
+    public UnitConversion() {}
+    public StockValue convertToKG(StockValue stockValue, String ingredientName) {
         switch (stockValue.getUnit()) {
             case L:
                 stockValue.setUnit(UnitTypeEnum.KG);

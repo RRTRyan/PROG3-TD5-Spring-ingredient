@@ -1,6 +1,7 @@
 package org.rrtryan.springingredients.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.rrtryan.springingredients.entity.enums.DishTypeEnum;
 
 import java.util.List;
@@ -55,6 +56,14 @@ public class Dish {
         this.ingredientsLinkList = ingredientsLinkList;
     }
 
+    public List<Ingredient> getIngredients() {
+        return this.getIngredientsLinkList()
+                .stream()
+                .map(DishIngredient::getIngredient)
+                .toList();
+    }
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public Double getPrice() {
         return price;
     }
@@ -85,6 +94,7 @@ public class Dish {
         return Objects.hash(id, name, dishType, ingredientsLinkList);
     }
 
+    @JsonIgnore
     public Double getDishCost() {
         for (DishIngredient ingredientLink : ingredientsLinkList) {
             if (ingredientLink.getQuantityRequired() == null) {
@@ -94,6 +104,7 @@ public class Dish {
         return this.ingredientsLinkList.stream().mapToDouble(ingredient -> (ingredient.getIngredient().getPrice() * ingredient.getQuantityRequired())).sum();
     }
 
+    @JsonIgnore
     public Double getGrossMargin() {
         if (this.price == null) {
             throw new RuntimeException("Price is null");
