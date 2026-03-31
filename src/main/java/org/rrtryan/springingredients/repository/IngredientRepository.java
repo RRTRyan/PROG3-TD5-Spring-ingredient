@@ -1,5 +1,6 @@
 package org.rrtryan.springingredients.repository;
 
+import org.rrtryan.springingredients.entity.StockMovement;
 import org.rrtryan.springingredients.entity.enums.CategoryEnum;
 import org.rrtryan.springingredients.entity.Ingredient;
 
@@ -7,6 +8,7 @@ import org.rrtryan.springingredients.utils.IngredientRepositoryUtils;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,6 +189,22 @@ public class IngredientRepository extends GenericRepository {
             Ingredient ingredient = findIngredientsByCriteria(toSave.getName(), toSave.getCategory(), null, 1, 1).getLast();
             ingredient.setStockMovementList(ingredientRepositoryUtils.getIngredientStockMovementList(connection, toSave.getId()));
             return ingredient;
+        } catch (SQLException | RuntimeException e) {
+            rollback(connection);
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public List<StockMovement> updateStockMovement(Ingredient ingredient) {
+        Connection connection = getConnection();
+        try {
+            connection.setAutoCommit(false);
+            ingredientRepositoryUtils.createStockMovementRecord(connection, ingredient);
+            connection.commit();
+            ingredient.setStockMovementList(ingredientRepositoryUtils.getIngredientStockMovementList(connection, ingredient.getId()));
+            return ingredient.getStockMovementList();
         } catch (SQLException | RuntimeException e) {
             rollback(connection);
             throw new RuntimeException(e);

@@ -88,6 +88,14 @@ public class Ingredient {
                 '}';
     }
 
+    public List<StockMovement> getStockMovementBetween(Instant start, Instant end) {
+        if (this.stockMovementList.isEmpty()) {
+            return null;
+        }
+        return this.getStockMovementList().stream().filter(stockMovement -> (stockMovement.getCreationDateTime().isAfter(start) &&
+        stockMovement.getCreationDateTime().isBefore(end))).toList();
+    }
+
     public StockValue getStockValueAt(Instant t) {
         if (this.stockMovementList.isEmpty()) {
             return new StockValue(0D, UnitTypeEnum.KG);

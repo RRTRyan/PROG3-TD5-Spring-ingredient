@@ -1,6 +1,8 @@
 package org.rrtryan.springingredients.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.rrtryan.springingredients.entity.enums.MovementTypeEnum;
+import org.rrtryan.springingredients.entity.enums.UnitTypeEnum;
 
 import java.time.Instant;
 
@@ -25,8 +27,17 @@ public class StockMovement {
         this.id = id;
     }
 
+    @JsonIgnore
     public StockValue getValue() {
         return value;
+    }
+
+    public double getQuantity() {
+        return this.value.getQuantity();
+    }
+
+    public UnitTypeEnum getUnit() {
+        return this.value.getUnit();
     }
 
     public void setValue(StockValue value) {
@@ -48,6 +59,7 @@ public class StockMovement {
     public void setCreationDateTime(Instant movementDate) {
         this.creationDateTime = movementDate;
     }
+
 
     @Override
     public String toString() {

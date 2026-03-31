@@ -1,12 +1,15 @@
 package org.rrtryan.springingredients.service;
 
 import org.rrtryan.springingredients.entity.Ingredient;
+import org.rrtryan.springingredients.entity.Movement;
+import org.rrtryan.springingredients.entity.StockMovement;
 import org.rrtryan.springingredients.entity.StockValue;
 import org.rrtryan.springingredients.exception.NotFoundException;
 import org.rrtryan.springingredients.repository.IngredientRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,4 +47,27 @@ public class IngredientService {
             throw new RuntimeException(e);
         }
     };
+
+    public List<StockMovement> addStockMovement(Integer id, List<Movement> movements) throws NotFoundException {
+        try {
+            Ingredient ingredient = findIngredientById(id);
+            List<StockMovement> stockMovementList = new ArrayList<>();
+            Instant ingredientCreationDateTime = Instant.now();
+            for  (Movement movement : movements) {
+                stockMovementList.add(
+                        new StockMovement(
+                                1,
+                                new StockValue(movement.getQuantity(), movement.getUnit()),
+                                movement.getType(),
+                                ingredientCreationDateTime
+                        ));
+            };
+            ingredient.setStockMovementList(stockMovementList);
+            return ingredientRepository.updateStockMovement(ingredient).stream()
+                    .filter(stockMovement -> stockMovement.getCreationDateTime().isAfter(ingredientCreationDateTime.minusSeconds(1)))
+                    .toList();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

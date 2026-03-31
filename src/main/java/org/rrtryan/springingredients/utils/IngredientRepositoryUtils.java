@@ -57,19 +57,21 @@ public class IngredientRepositoryUtils extends GenericRepositoryUtils{
     public void createStockMovementRecord(Connection connection, Ingredient ingredient) throws SQLException {
         try {
             PreparedStatement ps = connection.prepareStatement(("INSERT INTO stock_movement (id, id_ingredient, quantity, unit, type, creation_datetime) VALUES " +
-                    "(?, ?, ?, ?::unit_type, ?::stock_movement_type, ?), ".repeat(Math.max(((ingredient.getStockMovementList().size()) - 1), 0)) +
-                    "(?, ?, ?, ?::unit_type, ?::stock_movement_type, ?) ON CONFLICT (id) DO NOTHING"));
+                    "(?, ?, ?, ?::unit_type, ?::stock_movement_enum, ?), ".repeat(Math.max(((ingredient.getStockMovementList().size()) - 1), 0)) +
+                    "(?, ?, ?, ?::unit_type, ?::stock_movement_enum, ?) ON CONFLICT (id) DO NOTHING"));
             int i = 1;
+            int j = getNextSequenceValue(connection, "stock_movement", "stock_movement_id_seq");
             for (StockMovement stockMovement : ingredient.getStockMovementList()) {
-                ps.setInt(i++, stockMovement.getId());
+                ps.setInt(i++, j++);
                 ps.setInt(i++, ingredient.getId());
                 ps.setDouble(i++, stockMovement.getValue().getQuantity());
                 ps.setString(i++, stockMovement.getValue().getUnit().toString());
                 ps.setString(i++, stockMovement.getType().toString());
                 ps.setTimestamp(i++, Timestamp.from(stockMovement.getCreationDateTime()));
             }
-            ps.executeBatch();
+            ps.execute();
         } catch (SQLException e) {
+            System.out.println(e.getMessage());
             throw new RuntimeException(e);
         }
     }
