@@ -1,0 +1,245 @@
+openapi: 3.0.0
+info:
+  title: Spring Ingredient API
+  version: "0.1"
+servers:
+  - url: "http://127.0.0.1:8080/"
+    description: Local Server
+tags:
+  - name: Ingredients
+  - name: Dishes
+
+paths:
+  "/ingredients":
+    description: Get all ingredients
+    get:
+      tags:
+        - Ingredients
+      responses:
+        "200":
+          description: Return all ingredients
+          content:
+            "application/json":
+              schema:
+                type: array
+                uniqueItems: true
+                items:
+                  $ref: "#/components/schemas/Ingredient"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  "/ingredients/{id}":
+    description: Get ingredient with specified Id
+    parameters:
+      - $ref: "#/components/parameters/idParam"
+    get:
+      tags:
+        - Ingredients
+      responses:
+        "200":
+          description: Return ingredient with specified Id
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+
+        "404":
+          $ref: "#/components/responses/IngredientNotFound"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  "/ingredients/{id}/stock":
+    description: Get ingredient stock at specified instant
+    parameters:
+      - $ref: "#/components/parameters/idParam"
+      - $ref: "#/components/parameters/atParam"
+      - $ref: "#/components/parameters/unitParam"
+    get:
+      tags:
+        - Ingredients
+      responses:
+        "200":
+          description: Return ingredient stock at specified instant
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Stock"
+        "404":
+          $ref: "#/components/responses/IngredientNotFound"
+
+        "400":
+          description: Invalid query params
+          content:
+            "application/json":
+              schema:
+                type: string
+                example: Either mandatory query parameter `at` or `unit` is not provided.
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  "/dishes":
+    description: Get all dishes
+    get:
+      tags:
+        - Dishes
+      responses:
+        "200":
+          description: Return all dishes
+          content:
+            "application/json":
+              schema:
+                type: array
+                uniqueItems: true
+                items:
+                  $ref: "#/components/schemas/Dish"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  "/dishes/{id}/ingredients":
+    description: Update dish ingredient list
+    put:
+      tags:
+        - Dishes
+      parameters:
+        - $ref: "#/components/parameters/idParam"
+      requestBody:
+        description: List of updated ingredients
+        required: false
+        content:
+          "application/json":
+            schema:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: "#/components/schemas/Ingredient"
+
+      responses:
+        "200":
+          description: Return updated dish
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Dish"
+
+        "400":
+          description: Invalid request body
+          content:
+            "application/json":
+              schema:
+                type: string
+                example: Invalid request body
+
+        "404":
+          description: Dish not found
+          content:
+            "application/json":
+              schema:
+                type: string
+                example: Dish.id=1 is not found
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  schemas:
+    Dish:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Salade de fromage
+        ingredients:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/Ingredient"
+        price:
+          type: number
+          format: double
+          example: 200.0
+
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Tomate
+        price:
+          type: number
+          format: double
+          example: 100.00
+        category:
+          type: string
+          enum:
+            - VEGETABLE
+            - MARINE
+            - ANIMAL
+            - DAIRY
+            - OTHER
+
+    Stock:
+      type: object
+      properties:
+        quantity:
+          type: number
+          format: double
+          example: 10.00
+        unit:
+          type: string
+          enum:
+            - KG
+            - L
+            - PCS
+          example: KG
+
+  parameters:
+    idParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 1
+
+    atParam:
+      name: at
+      in: query
+      required: false
+      schema:
+        type: string
+        format: dateTime
+        example: 2026-01-01T12:00:00.000Z
+
+    unitParam:
+      name: unit
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - KG
+          - L
+          - PCS
+        example: KG
+
+  responses:
+    InternalServerError:
+      description: Failed to process request
+
+    IngredientNotFound:
+      description: Ingredient not found
+      content:
+        "application/json":
+          schema:
+            type: string
+            example: Ingredient.id=1 is not found
